@@ -106,9 +106,30 @@ trip <- trip %>%
 any(is.na(trip$duration))
 
 #' Next, we have to remove outliers from our data. The profiling_num
-#' function was used to determine the 98% range. Anything above
-#' the upper end of that range is considered an outlier, and
+#' function was used to determine the 98% range. Anything outside of
+#' that range is considered an outlier, and was
 #' subsequently removed the from the dataset.
 summary(trip$duration)
 profiling_num(trip$duration)
-trip <- trip[trip$duration <= 13351.44, ]
+
+#' This identifies all the rows that are outside of the 98%
+#' range.
+outliers <- trip %>%
+  filter(duration < 137 | duration > 13351.44)
+
+#' This simply narrows down the id columns for the those rows.
+outlier_ids <- outliers %>%
+  select(id, start_station_id, end_station_id)
+
+#' This exports that dataframe as a csv.
+write.csv(outlier_ids, "outlier_ids.csv", row.names = F)
+
+#' This simply reassigns all the data that is within the 98% range
+#' to the dataset, excluding everything outside of that.
+trip <- trip[trip$duration >= 137 & trip$duration <= 13351.44, ]
+
+
+
+
+
+

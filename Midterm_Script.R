@@ -133,7 +133,47 @@ trip <- trip[trip$duration >= 137 & trip$duration <= 13351.44, ]
 #' Eliminating rows that have NAs may remove the data
 #' for an entire day.
 
-#' Test commit for rush hour analysis.
+#' We will now start the rush hour analysis.
+
+library(lubridate)
+library(ggplot2)
+
+#' I intend to use the start time for the rush hour analysis,
+#' since the demand for the bikes is generated at the start 
+#' of the rides, becayse that is when people are looking for
+#' bikes.
+
+#' This converts the start_date column into the proper format
+#' for further analysis. 
+trip$start_date <- as.POSIXct(trip$start_date, format="%m/%d/%Y %H:%M")
+
+#' I will now create a new column with just the hours of when 
+#' rides began. I will also do the same, recording the day
+#' that trips began.
+trip$time <- hour(trip$start_date)
+trip$day <- weekdays(trip$start_date)
+
+#' This simply creates a new dataset version of trip, but only 
+#' for trips that happen on weekdays. 
+wtrips <- trip[trip$day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), ]
+
+#' Here, I create a new variable called hours, which groups 
+#' trips based on the hour they took place. I arrange it so 
+#' that I get the number of trips in each hour.
+hours <- wtrips %>%
+  group_by(time) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(time)
+
+#' This creates a histogram showing the number of trips per hour.
+barplot(hours$number_of_trips, names.arg = hours$time, main = "Volume of Trips per Hour on Weekdays", xlab = "Hour of the Day", ylab = "Number of Trips", col = "steelblue")
+
+
+
+
+
+
+
 
 
 

@@ -168,8 +168,13 @@ hours <- wtrips %>%
 #' This creates a histogram showing the number of trips per hour.
 barplot(hours$number_of_trips, names.arg = hours$time, main = "Volume of Trips per Hour on Weekdays", xlab = "Hour of the Day", ylab = "Number of Trips", col = "steelblue")
 
-#' Test commit.
+#' We now have to find the most frequent start and end stations
+#' during rush hours. 
 
+#' To start, I will create a new dataset, with only the parameters
+#' we are looking for. 
+rushtrips <- wtrips %>%
+  filter((time >= 7 & time <= 9) | (time >= 16 & time <= 18))
 
 
 

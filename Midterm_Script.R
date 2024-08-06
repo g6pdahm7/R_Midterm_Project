@@ -288,14 +288,41 @@ end_table_e <- tableGrob(most_end_e, rows = NULL)
 grid.newpage()
 grid.arrange(end_table_e, top = textGrob("Top 10 Ending Stations During Evening Rush Hours"))
 
+##### WEEKEND STATION FREQUENCIES #####
 
+#' Similar to what I did previously for isolating weekdays,
+#' I will start with creating a dataset for only
+#' weekend trips.
+Ltrips <- trip[trip$day %in% c("Saturday", "Sunday"), ]
 
+#' This is a similar process to what was done for the 
+#' rush hours. The only difference, is that I am using
+#' weekend data instead.
+most_start_w <- Ltrips %>%
+  group_by(start_station_name) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  head(10)
+print(most_start_w)
 
+most_end_w <- Ltrips %>%
+  group_by(end_station_name) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  head(10)
+print(most_end_w)
 
+#' Again, similar to what was done previously, I will 
+#' use functions from the grid packages to export my 
+#' tables as nice images.
 
+start_table_w <- tableGrob(most_start_w, rows = NULL)
+grid.newpage()
+grid.arrange(start_table_w, top = textGrob("Top 10 Starting Stations During Weekends"))
 
-
-
+end_table_w <- tableGrob(most_end_w, rows = NULL)
+grid.newpage()
+grid.arrange(end_table_w, top = textGrob("Top 10 Ending Stations During Weekends"))
 
 
 

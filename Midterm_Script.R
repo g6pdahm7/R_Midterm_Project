@@ -252,7 +252,41 @@ grid.newpage()
 grid.arrange(end_table_m, top = textGrob("Top 10 Ending Stations During Morning Rush Hours"))
 
 
+##### EVENING STATION FREQUENCIES #####
 
+#' To start, I will create a new dataset, with only the parameters
+#' we are looking for, evening hours. 
+rushtrips_e <- wtrips %>%
+  filter(time >= 16 & time <= 18)
+unique(rushtrips_e$time)
+
+#' Here, I create a table with the station names of the stations
+#' with the 10 highest number of trips, for starting points in the evening.
+most_start_e <- rushtrips_e %>%
+  group_by(start_station_name) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  head(10)
+print(most_start_e)
+
+#' Here, I created a table with the station names of the stations
+#' with the 10 highest number of trips, for end points in the evening.
+most_end_e <- rushtrips_e %>%
+  group_by(end_station_name) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  head(10)
+print(most_end_e)
+
+#' This generates an image containing a table for the
+#' start and end stations, specifically for evening rush hours. 
+start_table_e <- tableGrob(most_start_e, rows = NULL)
+grid.newpage()
+grid.arrange(start_table_e, top = textGrob("Top 10 Starting Stations During Evening Rush Hours"))
+
+end_table_e <- tableGrob(most_end_e, rows = NULL)
+grid.newpage()
+grid.arrange(end_table_e, top = textGrob("Top 10 Ending Stations During Evening Rush Hours"))
 
 
 

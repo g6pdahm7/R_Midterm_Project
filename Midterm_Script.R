@@ -75,4 +75,17 @@ basic_eda_w <- function(weather) {
 
 basic_eda_w(weather)
 
-#' Test commit for data cleaning branch
+#' Now, we will begin the data cleaning process.
+#' We will start with the trip dataset.
+
+#' We will have to remove all rows where duration is less than 
+#' 180 seconds. Before that, it's necessary to get their ids first. 
+cancelled_trips <- trip$id[which(trip$duration < 180)]
+cancelled_trips_ids <- data.frame(id = cancelled_trips)
+
+#' Exporting the ids as a csv file.
+write.csv(cancelled_trips_ids, "cancelled_trips_ids.csv", row.names = F)
+
+#' I am here simply removing the rows where duration is less than 
+#' 180 seconds.
+trip <- trip[trip$duration >= 180, ]

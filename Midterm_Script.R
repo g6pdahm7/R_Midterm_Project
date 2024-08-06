@@ -133,6 +133,7 @@ trip <- trip[trip$duration >= 137 & trip$duration <= 13351.44, ]
 #' Eliminating rows that have NAs may remove the data
 #' for an entire day.
 
+#' Test commit for rush hour analysis.
 
 
 

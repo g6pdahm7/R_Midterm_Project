@@ -128,7 +128,10 @@ write.csv(outlier_ids, "outlier_ids.csv", row.names = F)
 #' to the dataset, excluding everything outside of that.
 trip <- trip[trip$duration >= 137 & trip$duration <= 13351.44, ]
 
-
+#' The weather and station datasets are clean. No further 
+#' cleaning required. The weather dataset records daily observations.
+#' Eliminating rows that have NAs may remove the data
+#' for an entire day.
 
 
 

@@ -78,14 +78,37 @@ basic_eda_w(weather)
 #' Now, we will begin the data cleaning process.
 #' We will start with the trip dataset.
 
+library(dplyr)
+
 #' We will have to remove all rows where duration is less than 
-#' 180 seconds. Before that, it's necessary to get their ids first. 
-cancelled_trips <- trip$id[which(trip$duration < 180)]
-cancelled_trips_ids <- data.frame(id = cancelled_trips)
+#' 180 seconds and have started and ended on the same station.
+#' Before that, it's necessary to get their ids first. 
+
+#' This filters only rows where the two station ids are equal,
+#' with a duration less than 180. 
+cancelled_trips <- trip %>%
+  filter(start_station_id == end_station_id & duration < 180)
+
+#' This simply retrieves the ids for those trips into one 
+#' variable, which will be later used to export as a csv.
+cancelled_trips_ids <- cancelled_trips %>%
+  select(id, start_station_id, end_station_id)
 
 #' Exporting the ids as a csv file.
 write.csv(cancelled_trips_ids, "cancelled_trips_ids.csv", row.names = F)
 
 #' I am here simply removing the rows where duration is less than 
-#' 180 seconds.
-trip <- trip[trip$duration >= 180, ]
+#' 180 seconds, and have the same station ids.
+trip <- trip %>%
+  filter(!(trip$start_station_id == trip$end_station_id & trip$duration < 180))
+
+#' Checking for NAs
+any(is.na(trip$duration))
+
+#' Next, we have to remove outliers from our data. The profiling_num
+#' function was used to determine the 98% range. Anything above
+#' the upper end of that range is considered an outlier, and
+#' subsequently removed the from the dataset.
+summary(trip$duration)
+profiling_num(trip$duration)
+trip <- trip[trip$duration <= 13351.44, ]

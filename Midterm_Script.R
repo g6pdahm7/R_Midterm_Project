@@ -24,6 +24,7 @@ sum(trip$subscription_type == "")
 sum(trip$zip_code == "")
 trip$zip_code[trip$zip_code == ""] <- NA
 
+##### EDA #####
 
 #' EDA for trip
 
@@ -74,6 +75,8 @@ basic_eda_w <- function(weather) {
 }
 
 basic_eda_w(weather)
+
+##### DATA CLEANING #####
 
 #' Now, we will begin the data cleaning process.
 #' We will start with the trip dataset.
@@ -128,10 +131,25 @@ write.csv(outlier_ids, "outlier_ids.csv", row.names = F)
 #' to the dataset, excluding everything outside of that.
 trip <- trip[trip$duration >= 137 & trip$duration <= 13351.44, ]
 
+#' I noticed that there is some additional cleaning that needs to be done. 
+#' This is specifically for the weather dataset. Since the letter "T"
+#' represents trace amounts of precipitation, below 0.01 inches, I simply
+#' replaced it with 0.005, which is the halfway point of that range.
+unique(weather$precipitation_inches)
+weather$precipitation_inches[weather$precipitation_inches == "T"] <- 0.005
+
+#' I also later noticed that in the events column, has some 
+#' inconsistency with the letter casings. 
+unique(weather$events)
+weather$events[weather$events == "rain"] <- "Rain"
+
+
 #' The weather and station datasets are clean. No further 
 #' cleaning required. The weather dataset records daily observations.
 #' Eliminating rows that have NAs may remove the data
 #' for an entire day.
+
+##### RUSH HOUR ANALYSIS #####
 
 #' We will now start the rush hour analysis.
 
@@ -370,3 +388,19 @@ ratio <- monthly_use %>%
 utilization_table <- tableGrob(ratio, rows = NULL)
 grid.newpage()
 grid.arrange(utilization_table, top = textGrob(" Average Total Utilization Ratio per Month"))
+
+##### WEATHER ANALYSIS #####
+
+#' Next we have to do the weather analysis for the data science
+#' team.
+
+#' The first step is to join the datasets as appropriate so its ready
+#' for analysis. 
+
+
+
+
+
+
+
+

@@ -370,5 +370,3 @@ ratio <- monthly_use %>%
 utilization_table <- tableGrob(ratio, rows = NULL)
 grid.newpage()
 grid.arrange(utilization_table, top = textGrob(" Average Total Utilization Ratio per Month"))
-
-

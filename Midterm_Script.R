@@ -168,7 +168,7 @@ hours <- wtrips %>%
 #' This creates a histogram showing the number of trips per hour.
 barplot(hours$number_of_trips, names.arg = hours$time, main = "Volume of Trips per Hour on Weekdays", xlab = "Hour of the Day", ylab = "Number of Trips", col = "steelblue")
 
-
+#' Test commit.
 
 
 

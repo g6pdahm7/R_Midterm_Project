@@ -395,7 +395,10 @@ grid.arrange(utilization_table, top = textGrob(" Average Total Utilization Ratio
 #' team.
 
 #' The first step is to join the datasets as appropriate so its ready
-#' for analysis. 
+#' for analysis. In order to do that, I left join the 
+idcity <- station %>% select(id, city)
+trip <- trip %>%
+  left_join(idcity, by = c("start_station_id" = "id"))
 
 
 

@@ -288,23 +288,87 @@ end_table_e <- tableGrob(most_end_e, rows = NULL)
 grid.newpage()
 grid.arrange(end_table_e, top = textGrob("Top 10 Ending Stations During Evening Rush Hours"))
 
+##### WEEKEND STATION FREQUENCIES #####
 
+#' Similar to what I did previously for isolating weekdays,
+#' I will start with creating a dataset for only
+#' weekend trips.
+Ltrips <- trip[trip$day %in% c("Saturday", "Sunday"), ]
 
+#' This is a similar process to what was done for the 
+#' rush hours. The only difference, is that I am using
+#' weekend data instead.
+most_start_w <- Ltrips %>%
+  group_by(start_station_name) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  head(10)
+print(most_start_w)
 
+most_end_w <- Ltrips %>%
+  group_by(end_station_name) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  head(10)
+print(most_end_w)
 
+#' Again, similar to what was done previously, I will 
+#' use functions from the grid packages to export my 
+#' tables as nice images.
 
+start_table_w <- tableGrob(most_start_w, rows = NULL)
+grid.newpage()
+grid.arrange(start_table_w, top = textGrob("Top 10 Starting Stations During Weekends"))
 
+end_table_w <- tableGrob(most_end_w, rows = NULL)
+grid.newpage()
+grid.arrange(end_table_w, top = textGrob("Top 10 Ending Stations During Weekends"))
 
+##### AVERAGE UTILIZATION #####
 
+#' The average utilization can be calculated by adding up the total 
+#' duration the bikes were used per month, and then dividing it
+#' by the total time in each respective month. I will also have to 
+#' watch out for the units, as duration is recorded in seconds.
 
+#' For streamlining, I will use the day the trip was started as the
+#' day of the trip. This prevents conflict for trips that went 
+#' through midnight into the next month.
 
+#' I am going to start off by creating a table containing the 
+#' total amount of time bikes were used every month. Divided by 
+#' 3600 to convert to hours.
+trip$ym <- format(trip$start_date, "%Y-%m")
+monthly_use <- trip %>%
+  group_by(ym) %>%
+  summarise(total_use_hours = sum(duration) / 3600)
+str(monthly_use)
 
+#' Next, we have to figure out how many hours are in each month.
+#' The problem is that each month has a different number of days.
 
+#' To fix this problem, I will create a data frame with the 
+#' number of hours in each month in 2014.
+total_hours <- data.frame(
+  ym = c("2014-01", "2014-02", "2014-03", "2014-04", "2014-05", "2014-06", 
+                 "2014-07", "2014-08", "2014-09", "2014-10", "2014-11", "2014-12"),
+  overall_hours = c(31*24, 28*24, 31*24, 30*24, 31*24, 30*24, 31*24, 31*24, 30*24, 31*24, 30*24, 31*24)
+)
+str(total_hours)
 
+#' Next we have to calculate the utilization ratio for each month.
+#' To do that I will join the two tables created, then divide the 
+#' columns as appropriate. I joined them by the ym column, which 
+#' is the same in both tables.
+ratio <- monthly_use %>%
+  left_join(total_hours, by = "ym") %>%
+  mutate(utilization_ratio = total_use_hours / overall_hours) %>%
+  select(ym, total_use_hours, overall_hours, utilization_ratio)
 
-
-
-
-
+#' Similar to the processes done before. I will export this data
+#' in the form of a table in my report. 
+utilization_table <- tableGrob(ratio, rows = NULL)
+grid.newpage()
+grid.arrange(utilization_table, top = textGrob(" Average Total Utilization Ratio per Month"))
 
 

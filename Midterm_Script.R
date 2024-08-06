@@ -175,10 +175,24 @@ barplot(hours$number_of_trips, names.arg = hours$time, main = "Volume of Trips p
 #' we are looking for. 
 rushtrips <- wtrips %>%
   filter((time >= 7 & time <= 9) | (time >= 16 & time <= 18))
+unique(rushtrips$time)
 
+#' Here, I create a table with the station names of the stations
+#' with the 10 highest number of trips, for starting points.
+most_start <- rushtrips %>%
+  group_by(start_station_name) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  head(10)
+print(most_start)
 
-
-
-
+#' Here, I created a table with the station names of the stations
+#' with the 10 highest number of trips, for end points.
+most_end <- rushtrips %>%
+  group_by(end_station_name) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  head(10)
+print(most_end)
 
 

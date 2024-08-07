@@ -395,14 +395,34 @@ grid.arrange(utilization_table, top = textGrob(" Average Total Utilization Ratio
 #' team.
 
 #' The first step is to join the datasets as appropriate so its ready
-#' for analysis. In order to do that, I left join the 
+#' for analysis. In order to do that, I left join the city 
+#' based on the condition that the two ids match from the two different
+#' datasets. 
 idcity <- station %>% select(id, city)
 trip <- trip %>%
   left_join(idcity, by = c("start_station_id" = "id"))
 
+#' Next we have to follow a similar process to join the 
+#' weather columns. 
 
+#' I will start by making sure the dates in the datasets 
+#' are appropriately formatted. 
+trip$start_date <- as.Date(trip$start_date)
+weather$date <- as.Date(weather$date, format="%m/%d/%Y")
 
+#' Now that I have fixed up the dates so they match, 
+#' I will create a new dataset with the columns I desire
+#' from weather.
+weatheradjusted <- weather %>%
+  select(date, city, max_temperature_f, mean_temperature_f, min_temperature_f, 
+         max_visibility_miles, mean_visibility_miles, min_visibility_miles, 
+         max_wind_Speed_mph, mean_wind_speed_mph, max_gust_speed_mph, 
+         precipitation_inches, cloud_cover, events)
 
+#' Now that I have the new dataset with the desired columns,
+#' I will join it based on the dates and cities being the same.
+trip <- trip %>%
+  left_join(weatheradjusted, by = c("start_date" = "date", "city" = "city"))
 
 
 

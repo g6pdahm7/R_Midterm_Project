@@ -24,6 +24,7 @@ sum(trip$subscription_type == "")
 sum(trip$zip_code == "")
 trip$zip_code[trip$zip_code == ""] <- NA
 
+##### EDA #####
 
 #' EDA for trip
 
@@ -74,6 +75,8 @@ basic_eda_w <- function(weather) {
 }
 
 basic_eda_w(weather)
+
+##### DATA CLEANING #####
 
 #' Now, we will begin the data cleaning process.
 #' We will start with the trip dataset.
@@ -128,10 +131,25 @@ write.csv(outlier_ids, "outlier_ids.csv", row.names = F)
 #' to the dataset, excluding everything outside of that.
 trip <- trip[trip$duration >= 137 & trip$duration <= 13351.44, ]
 
+#' I noticed that there is some additional cleaning that needs to be done. 
+#' This is specifically for the weather dataset. Since the letter "T"
+#' represents trace amounts of precipitation, below 0.01 inches, I simply
+#' replaced it with 0.005, which is the halfway point of that range.
+unique(weather$precipitation_inches)
+weather$precipitation_inches[weather$precipitation_inches == "T"] <- 0.005
+
+#' I also later noticed that in the events column, has some 
+#' inconsistency with the letter casings. 
+unique(weather$events)
+weather$events[weather$events == "rain"] <- "Rain"
+
+
 #' The weather and station datasets are clean. No further 
 #' cleaning required. The weather dataset records daily observations.
 #' Eliminating rows that have NAs may remove the data
 #' for an entire day.
+
+##### RUSH HOUR ANALYSIS #####
 
 #' We will now start the rush hour analysis.
 
@@ -371,4 +389,93 @@ utilization_table <- tableGrob(ratio, rows = NULL)
 grid.newpage()
 grid.arrange(utilization_table, top = textGrob(" Average Total Utilization Ratio per Month"))
 
+##### WEATHER JOINING #####
 
+#' Next we have to do the weather analysis for the data science
+#' team.
+
+#' The first step is to join the datasets as appropriate so its ready
+#' for analysis. In order to do that, I left join the city 
+#' based on the condition that the two ids match from the two different
+#' datasets. 
+idcity <- station %>% select(id, city)
+trip <- trip %>%
+  left_join(idcity, by = c("start_station_id" = "id"))
+
+#' Next we have to follow a similar process to join the 
+#' weather columns. 
+
+#' I will start by making sure the dates in the datasets 
+#' are appropriately formatted. 
+trip$start_date <- as.Date(trip$start_date)
+weather$date <- as.Date(weather$date, format="%m/%d/%Y")
+
+#' Now that I have fixed up the dates so they match, 
+#' I will create a new dataset with the columns I desire
+#' from weather.
+weatheradjusted <- weather %>%
+  select(date, city, max_temperature_f, mean_temperature_f, min_temperature_f, 
+         max_visibility_miles, mean_visibility_miles, min_visibility_miles, 
+         max_wind_Speed_mph, mean_wind_speed_mph, max_gust_speed_mph, 
+         precipitation_inches, cloud_cover, events)
+
+#' Now that I have the new dataset with the desired columns,
+#' I will join it based on the dates and cities being the same.
+trip <- trip %>%
+  left_join(weatheradjusted, by = c("start_date" = "date", "city" = "city"))
+
+##### WEATHER ANALYSIS #####
+
+library(corrplot)
+
+#' The next thing I want to do is think about my correlation matrix. Instead of
+#' making a matrix comparing everything together, I think it would be 
+#' more meaningful to compare the weather factors with the performance of
+#' bike use. To do that, I have opted to use duration of rides and number of 
+#' trips per day.
+
+#' To start, we have to determine the number of trips per day in each city.
+dailytrips <- trip %>%
+  group_by(start_date, city) %>%
+  summarise(number_of_trips = n())
+
+#' Now that we have the number of trips per day in each city calculated, 
+#' it is necessary to left join in back to trip so we can do the analysis.
+trip <- trip %>%
+  left_join(dailytrips, by = c("start_date" = "start_date", "city" = "city"))
+
+#' Next I extracted all the columns that are going to be necessary 
+#' in my correlation analysis. I converted everything to numeric and 
+#' made it into a matric.
+corrdata <- trip %>%
+  select(duration, number_of_trips, max_temperature_f, mean_temperature_f, min_temperature_f,
+         max_visibility_miles, mean_visibility_miles, min_visibility_miles,
+         max_wind_Speed_mph, mean_wind_speed_mph, max_gust_speed_mph,
+         precipitation_inches, cloud_cover) %>%
+  mutate(across(everything(), as.numeric))
+matrix <- cor(corrdata, use = "complete.obs")
+
+#' This is the part where I created a secondary matrix, with the 
+#' rows and columns labelled as needed in order for me to do the 
+#' table and the plot later on.
+goodmatrix <- matrix[c("duration", "number_of_trips"), c("max_temperature_f", "mean_temperature_f", "min_temperature_f", "max_visibility_miles", "mean_visibility_miles", "min_visibility_miles", "max_wind_Speed_mph", "mean_wind_speed_mph", "max_gust_speed_mph", "precipitation_inches", "cloud_cover")]
+
+#' The next step is that I am going to make  table to show the data
+#' using the grid package in a similar way to what I have done previously. 
+#' I will start off by rounding to 3 decimal places. I will then 
+#' create a dataframe and table as need and done previously in order to 
+#' put it through the grid.arrange function. I had to play around with the
+#' display of th columns so it all fit in the exported image.
+goodmatrix_rounded <- round(goodmatrix, 3)
+goodmatrix_df <- as.data.frame(goodmatrix_rounded)
+goodmatrix_df$Weather_Factors <- rownames(goodmatrix_df)
+goodmatrix_df <- goodmatrix_df[, c(ncol(goodmatrix_df), 1:(ncol(goodmatrix_df)-1))]
+matrix_table <- tableGrob(goodmatrix_df, rows = NULL, theme = ttheme_default(colhead = list(fg_params = list(rot = 90, just = "center", x = 0.5))))
+grid.newpage()
+grid.arrange(matrix_table, top = textGrob("Correlation Matrix of Weather Factors with Duration and Number of Trips"))
+
+#' Now that I have prepared my table, I will also prepare the correlation
+#' matrix plot using the corrplot function. I am also going to add a legend
+#' so the colors are easier to be comprehended by the reader.
+corrplot(goodmatrix, method = "color", type = "full", tl.col = "black", tl.srt = 90, tl.cex = 0.8, cl.pos = "n", addgrid.col = NA, title = "Correlation Matrix of Weather Factors with Bike Use Indicators", mar = c(7, 2, 7, 2), cex.main = 0.77) 
+legend("topleft", legend = seq(-1, 1, by = 0.2), fill = colorRampPalette(c("blue", "white", "red"))(11), title = "Corr. Legend", cex = 0.8)

@@ -389,7 +389,7 @@ utilization_table <- tableGrob(ratio, rows = NULL)
 grid.newpage()
 grid.arrange(utilization_table, top = textGrob(" Average Total Utilization Ratio per Month"))
 
-##### WEATHER ANALYSIS #####
+##### WEATHER JOINING #####
 
 #' Next we have to do the weather analysis for the data science
 #' team.
@@ -423,6 +423,27 @@ weatheradjusted <- weather %>%
 #' I will join it based on the dates and cities being the same.
 trip <- trip %>%
   left_join(weatheradjusted, by = c("start_date" = "date", "city" = "city"))
+
+##### WEATHER ANALYSIS #####
+
+library(corrplot)
+
+#' The next thing I want to do is think about my correlation matrix. Instead of
+#' making a matrix comparing everything together, I think it would be 
+#' more meaningful to compare the weather factors with the performance of
+#' bike use. To do that, I have opted to use duration of rides and number of 
+#' trips per day.
+
+#' To start, we have to determine the number of trips per day in each city.
+dailytrips <- trip %>%
+  group_by(start_date, city) %>%
+  summarise(number_of_trips = n())
+
+#' Now that we have the number of trips per day in each city calculated, 
+#' it is necessary to left join in back to trip so we can do the analysis.
+trip <- trip %>%
+  left_join(dailytrips, by = c("start_date" = "start_date", "city" = "city"))
+
 
 
 

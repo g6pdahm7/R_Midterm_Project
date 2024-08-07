@@ -479,3 +479,8 @@ grid.arrange(matrix_table, top = textGrob("Correlation Matrix of Weather Factors
 #' so the colors are easier to be comprehended by the reader.
 corrplot(goodmatrix, method = "color", type = "full", tl.col = "black", tl.srt = 90, tl.cex = 0.8, cl.pos = "n", addgrid.col = NA, title = "Correlation Matrix of Weather Factors with Bike Use Indicators", mar = c(7, 2, 7, 2), cex.main = 0.77) 
 legend("topleft", legend = seq(-1, 1, by = 0.2), fill = colorRampPalette(c("blue", "white", "red"))(11), title = "Corr. Legend", cex = 0.8)
+
+
+
+
+

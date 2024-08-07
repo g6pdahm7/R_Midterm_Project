@@ -444,7 +444,38 @@ dailytrips <- trip %>%
 trip <- trip %>%
   left_join(dailytrips, by = c("start_date" = "start_date", "city" = "city"))
 
+#' Next I extracted all the columns that are going to be necessary 
+#' in my correlation analysis. I converted everything to numeric and 
+#' made it into a matric.
+corrdata <- trip %>%
+  select(duration, number_of_trips, max_temperature_f, mean_temperature_f, min_temperature_f,
+         max_visibility_miles, mean_visibility_miles, min_visibility_miles,
+         max_wind_Speed_mph, mean_wind_speed_mph, max_gust_speed_mph,
+         precipitation_inches, cloud_cover) %>%
+  mutate(across(everything(), as.numeric))
+matrix <- cor(corrdata, use = "complete.obs")
 
+#' This is the part where I created a secondary matrix, with the 
+#' rows and columns labelled as needed in order for me to do the 
+#' table and the plot later on.
+goodmatrix <- matrix[c("duration", "number_of_trips"), c("max_temperature_f", "mean_temperature_f", "min_temperature_f", "max_visibility_miles", "mean_visibility_miles", "min_visibility_miles", "max_wind_Speed_mph", "mean_wind_speed_mph", "max_gust_speed_mph", "precipitation_inches", "cloud_cover")]
 
+#' The next step is that I am going to make  table to show the data
+#' using the grid package in a similar way to what I have done previously. 
+#' I will start off by rounding to 3 decimal places. I will then 
+#' create a dataframe and table as need and done previously in order to 
+#' put it through the grid.arrange function. I had to play around with the
+#' display of th columns so it all fit in the exported image.
+goodmatrix_rounded <- round(goodmatrix, 3)
+goodmatrix_df <- as.data.frame(goodmatrix_rounded)
+goodmatrix_df$Weather_Factors <- rownames(goodmatrix_df)
+goodmatrix_df <- goodmatrix_df[, c(ncol(goodmatrix_df), 1:(ncol(goodmatrix_df)-1))]
+matrix_table <- tableGrob(goodmatrix_df, rows = NULL, theme = ttheme_default(colhead = list(fg_params = list(rot = 90, just = "center", x = 0.5))))
+grid.newpage()
+grid.arrange(matrix_table, top = textGrob("Correlation Matrix of Weather Factors with Duration and Number of Trips"))
 
-
+#' Now that I have prepared my table, I will also prepare the correlation
+#' matrix plot using the corrplot function. I am also going to add a legend
+#' so the colors are easier to be comprehended by the reader.
+corrplot(goodmatrix, method = "color", type = "full", tl.col = "black", tl.srt = 90, tl.cex = 0.8, cl.pos = "n", addgrid.col = NA, title = "Correlation Matrix of Weather Factors with Bike Use Indicators", mar = c(7, 2, 7, 2), cex.main = 0.77) 
+legend("topleft", legend = seq(-1, 1, by = 0.2), fill = colorRampPalette(c("blue", "white", "red"))(11), title = "Corr. Legend", cex = 0.8)

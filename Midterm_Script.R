@@ -27,6 +27,7 @@ trip$zip_code[trip$zip_code == ""] <- NA
 ##### EDA #####
 
 #' EDA for trip
+# SK Good idea to put EDA commands in a function
 
 basic_eda_t <- function(trip) {
   glimpse(trip)
@@ -36,13 +37,19 @@ basic_eda_t <- function(trip) {
   plot_num(trip)
   describe(trip)
 }
-
+# SK (Points taken) The output of the code below shows 70 unique start/end station IDs, and 
+# 74 unique start/end station names. This is a discrepancy worth looking into.
 basic_eda_t(trip)
 
 #' Checking and replacing empty cells with NAs for station
 sum(station == "", na.rm = T)
 
 #' EDA for station
+# SK (Points taken) But it's a really bad idea to re-create that same function
+# with a different input. "Create once, use multiple times" is the idea of a function.
+# Instead of re-creating it below, you could have called the above function as:
+# basic_eda_t(station)
+# and you would have got the exact same result. 
 
 basic_eda_s <- function(station) {
   glimpse(station)
@@ -64,7 +71,7 @@ sum(weather$events == "", na.rm = T)
 weather$events[weather$events == ""] <- "None"
 
 #' EDA for weather
-
+# SK Same as above, bad idea!
 basic_eda_w <- function(weather) {
   glimpse(weather)
   print(status(weather))
@@ -112,6 +119,12 @@ any(is.na(trip$duration))
 #' function was used to determine the 98% range. Anything outside of
 #' that range is considered an outlier, and was
 #' subsequently removed the from the dataset.
+
+# SK Detecting and removing outliers does not mean removing every value that
+# does not contribute to a normal distribution. Outliers are typically 
+# abnormal values that are likely unnatural/incorrect. Unfortunately,
+# you removed very plausible 60-137 second trips between two close stations,
+# and many very plausible trips over 3.7 hours.
 summary(trip$duration)
 profiling_num(trip$duration)
 
@@ -217,7 +230,7 @@ print(most_end)
 
 #' I have done some research on ways to create nicer tables, and 
 #' export them nicely as an image. 
-
+# SK Good job!
 #' Loading the grid packages, which achieves that for me.
 
 library(gridExtra)
@@ -306,6 +319,9 @@ end_table_e <- tableGrob(most_end_e, rows = NULL)
 grid.newpage()
 grid.arrange(end_table_e, top = textGrob("Top 10 Ending Stations During Evening Rush Hours"))
 
+# SK Great idea to compare station usage frequencies between morning and
+# evening rush hours
+
 ##### WEEKEND STATION FREQUENCIES #####
 
 #' Similar to what I did previously for isolating weekdays,
@@ -367,6 +383,10 @@ str(monthly_use)
 
 #' To fix this problem, I will create a data frame with the 
 #' number of hours in each month in 2014.
+
+# SK lubridate package has some really nice functions that will
+# make your life easier
+
 total_hours <- data.frame(
   ym = c("2014-01", "2014-02", "2014-03", "2014-04", "2014-05", "2014-06", 
                  "2014-07", "2014-08", "2014-09", "2014-10", "2014-11", "2014-12"),
